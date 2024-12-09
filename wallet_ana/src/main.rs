@@ -159,7 +159,7 @@ pub async fn get_top_holders(token_address: &str) -> Result<TokenInfo> {
 //                             };
 
 //                             let from_address = Pubkey::from_str(&account_keys[0]).unwrap();
-//                             if from_address != *address { // 排除与有者地址相同的转账地址
+//                             if from_address != *address { // 排除与者地址相同的转账地址
 //                                 transfers.push(TransferInfo {
 //                                     from: from_address,
 //                                     to: *address,
@@ -210,7 +210,7 @@ pub async fn get_sol_transfer_history_api(address: &str, api_key: &str) -> Resul
                     let from_address_str = &captures[1]; // 获取捕获的来源地址
                     let to_address_str = &captures[3]; // 获取捕获的目标地址
 
-                    if to_address_str == address { // 检查目标地址是否是本地址
+                    if to_address_str == address { // 检查标地址是否是本地址
                         return Ok(Pubkey::from_str(from_address_str)?); // 返回来源地址
                     }
                 }
@@ -257,16 +257,20 @@ async fn handle_health_check(params: HashMap<String, String>) -> Result<impl war
     let token_info = get_top_holders(&token_address).await.map_err(|_| warp::reject())?;
 
     let mut total_balance_map = HashMap::new();
-    let skip_addresses = vec![
-        // ... 省略跳过的地址 ...
-    ];
+    let skip_addresses: Vec<String> = env::var("SKIP_ADDRESSES")
+        .unwrap_or_else(|_| {
+            "5tzFkiKscXHK5ZXCGbXZxdw7gTjjD1mBwuoFbhUvuAi9,ASTyfSima4LLAdDgoFGkgqoKowG1LZFDr9fAQrg7iaJZ,AC5RDfQFmDS1deWZos921JfqscXdByf8BKHs5ACWjtW2,5VCwKtCXgCJ6kit5FybXjvriW3xELsFDhYrPSqtJNmcD,FWznbcNXWQuHTawe9RxvQ2LdCENssh12dsznf4RiouN5,H8sMJSCQxfKiFTCfDR3DUMLPwcRbM61LGFJ8N4dK3WjS,u6PJ8DtQuPFnfmwHbGFULQ4u4EgjDiyYKjVEsynXq2w,2AQdpHJ2JpcEgPiATUXjQxA8QmafFegfQwSLWSprPicm".to_string()
+        })
+        .split(',')
+        .map(|s| s.trim().to_string())
+        .collect();
 
     let mut is_healthy = true;
 
     for holder in &token_info.holders {
         if let Some(sender) = holder.unique_senders.iter().next() {
             let sender_str = sender.to_string();
-            if skip_addresses.contains(&sender_str.as_str()) {
+            if skip_addresses.contains(&sender_str) {
                 continue;
             }
 
