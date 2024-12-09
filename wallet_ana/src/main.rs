@@ -159,7 +159,7 @@ pub async fn get_top_holders(token_address: &str) -> Result<TokenInfo> {
 //                             };
 
 //                             let from_address = Pubkey::from_str(&account_keys[0]).unwrap();
-//                             if from_address != *address { // 排除与者地址相同的转账地址
+//                             if from_address != *address { // 排除与��地址相同的转账地址
 //                                 transfers.push(TransferInfo {
 //                                     from: from_address,
 //                                     to: *address,
@@ -210,7 +210,7 @@ pub async fn get_sol_transfer_history_api(address: &str, api_key: &str) -> Resul
                     let from_address_str = &captures[1]; // 获取捕获的来源地址
                     let to_address_str = &captures[3]; // 获取捕获的目标地址
 
-                    if to_address_str == address { // 检查标地址是否是本地址
+                    if to_address_str == address { // 检查标���址是否是本地址
                         return Ok(Pubkey::from_str(from_address_str)?); // 返回来源地址
                     }
                 }
@@ -227,14 +227,17 @@ pub async fn get_sol_transfer_history_api(address: &str, api_key: &str) -> Resul
 #[tokio::main]
 async fn main() -> Result<()> {
     dotenv::dotenv().ok(); // 加载 .env 文件
+    let listen_address = env::var("LISTEN_ADDRESS").unwrap_or_else(|_| "127.0.0.1".to_string());
+    let listen_port = env::var("LISTEN_PORT").unwrap_or_else(|_| "3030".to_string()).parse::<u16>()?;
+
     let health_check = warp::path("health_check")
         .and(warp::query::<HashMap<String, String>>()) // 接收查询参数
         .and_then(handle_health_check);
 
     let routes = health_check.with(warp::cors().allow_any_origin());
 
-    println!("服务正在运行，监听在 3030 端口...");
-    warp::serve(routes).run(([127, 0, 0, 1], 3030)).await;
+    println!("服务正在运行，监听在 {} 端口...", listen_port);
+    warp::serve(routes).run((listen_address.parse::<std::net::IpAddr>()?, listen_port)).await;
 
     Ok(())
 }
@@ -298,6 +301,6 @@ async fn handle_health_check(params: HashMap<String, String>) -> Result<impl war
     // 打印 token_address 和健康状态
     println!("Token Address: {}, Health Status: {:?}", token_address, is_healthy);
 
-    Ok(warp::reply::json(&is_healthy)) // 返回健康状态
+    Ok(warp::reply::json(&is_healthy)) // 返���健康状态
 }
 
