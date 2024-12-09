@@ -159,7 +159,7 @@ pub async fn get_top_holders(token_address: &str) -> Result<TokenInfo> {
 //                             };
 
 //                             let from_address = Pubkey::from_str(&account_keys[0]).unwrap();
-//                             if from_address != *address { // 排除与��有者地址相同的转账地址
+//                             if from_address != *address { // 排除与有者地址相同的转账地址
 //                                 transfers.push(TransferInfo {
 //                                     from: from_address,
 //                                     to: *address,
@@ -275,8 +275,13 @@ async fn handle_health_check(params: HashMap<String, String>) -> Result<impl war
         }
     }
 
+    let max_balance: f64 = env::var("MAX_BALANCE")
+        .unwrap_or_else(|_| "300000000.0".to_string()) // 默认值为 300_000_000.0
+        .parse()
+        .expect("MAX_BALANCE must be a valid number");
+
     for (_, total_balance) in total_balance_map {
-        if total_balance > 300_000_000.0 {
+        if total_balance > max_balance { // 使用从环境变量读取的最大余额
             is_healthy = false;
             break; // 一旦现不健康，立即退出循环
         }
