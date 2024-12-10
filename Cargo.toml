@@ -2,7 +2,8 @@
 resolver = "2"
 members = [
     "abi",
-    "wallet_ana"
+    "wallet_ana",
+    "coin_check"
 ]
 
 [workspace.dependencies]
